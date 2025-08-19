@@ -1,0 +1,11 @@
+snowflake-connector-python
+pandas
+dotenv
+kagglehub
+pymongo
+flask
+dash
+dash_bootstrap_components
+plotly
+pandas
+pymongo
