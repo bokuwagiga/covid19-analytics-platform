@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:6.0
+    container_name: covid_mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  api:
+    build: .
+    container_name: covid_api
+    command: python api.py
+    ports:
+      - "5000:5000"
+    env_file:
+      - config/.env
+    depends_on:
+      - mongo
+
+  dash:
+    build: .
+    container_name: covid_dash
+    command: python app.py
+    ports:
+      - "8050:8050"
+    env_file:
+      - config/.env
+    depends_on:
+      - api
+
+volumes:
+  mongo_data:

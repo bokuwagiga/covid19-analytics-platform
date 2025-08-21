@@ -1,21 +1,19 @@
-from utils import get_snowflake_connection
+from src.utils import get_snowflake_connection
 
 
 def setup_snowflake(commands_file: str = 'setup.sql') -> None:
     """
-    Run the SQL setup file (setup.sql) to create all tables, warehouse,
-    and insert initial data.
-
-    The function opens the file, splits by semicolons, and executes
-    each SQL statement in Snowflake.
+    Runs the SQL setup file to create tables, warehouse,
+    and insert initial data in Snowflake
     """
     conn = get_snowflake_connection(initial=True)
     cursor = conn.cursor()
 
+    # read sql commands from file
     with open(commands_file, 'r') as file:
         sql_commands = file.read()
 
-    # split by ; so we can execute multiple commands
+    # split by ; to execute multiple commands
     sql_commands = sql_commands.split(';')
     for command in sql_commands:
         if command.strip():
@@ -23,7 +21,8 @@ def setup_snowflake(commands_file: str = 'setup.sql') -> None:
 
     cursor.close()
     conn.close()
-    print("✅ Snowflake setup complete.")
+    print("Snowflake setup complete.")
+
 
 if __name__ == "__main__":
     setup_snowflake()

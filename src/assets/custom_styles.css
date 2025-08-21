@@ -1,0 +1,11 @@
+.common-hover {
+    color: white;
+    margin-left: 10px;
+    background-color: #031317;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+
+.common-hover:hover {
+    filter: brightness(2);
+    transform: scale(1.005);
+}

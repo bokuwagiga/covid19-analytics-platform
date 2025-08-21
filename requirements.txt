@@ -9,3 +9,5 @@ dash_bootstrap_components
 plotly
 pandas
 pymongo
+matplotlib
+gridfs

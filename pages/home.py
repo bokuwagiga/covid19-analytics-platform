@@ -1,9 +1,0 @@
-import dash
-from dash import html
-
-dash.register_page(__name__, path="/")
-
-layout = html.Div([
-    html.H1("Welcome to Health Analytics Portal"),
-    html.P("Choose a page from the navbar.")
-])
