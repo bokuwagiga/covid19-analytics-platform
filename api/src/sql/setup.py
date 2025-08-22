@@ -1,4 +1,5 @@
-from utils import get_snowflake_connection
+#api/src/sql/setup.py
+from shared.utils import get_snowflake_connection
 
 
 def setup_snowflake(commands_file: str = 'setup.sql') -> None:

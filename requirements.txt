@@ -10,3 +10,7 @@ plotly
 pandas
 pymongo
 matplotlib
+prophet
+scikit-learn
+ydata-profiling
+Flask-Caching

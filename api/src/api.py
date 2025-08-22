@@ -1,4 +1,4 @@
-# api.py
+# api/src/api.py
 import os
 import traceback
 from datetime import datetime
@@ -7,23 +7,33 @@ import io
 import pandas as pd
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify, send_file
+from flask_caching import Cache
 from pymongo import MongoClient
 from bson import ObjectId
 import gridfs
+from forecast import build_forecast
+from clustering import run_clustering
 
 # functions from utils
-from utils import (
+from shared.utils import (
     load_kaggle_mortality_data,
     preprocess_mortality_data,
     fetch_data_from_snowflake
 )
-from config.config import EXCESS_MORTALITY_PAGE, VACCINATION_PAGE, INFECTION_DEATHS_PAGE, INFECTION_CASES_PAGE
+from shared.config.config import (EXCESS_MORTALITY_PAGE, VACCINATION_PAGE, INFECTION_DEATHS_PAGE, INFECTION_CASES_PAGE,
+                                  EDA_PAGE, MORTALITY_FORECAST_PAGE, CLUSTERING_PAGE)
 
 # load environment variables
 load_dotenv('config/.env')
 
 # flask app
 app = Flask(__name__)
+
+# Configure cache
+cache = Cache(app, config={
+    "CACHE_TYPE": "SimpleCache",   # for now: in-memory
+    "CACHE_DEFAULT_TIMEOUT": 300   # 5 minutes
+})
 
 # mongodb setup
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
@@ -40,32 +50,6 @@ df_mortality = preprocess_mortality_data(df_mortality_raw)
 
 
 # --- api endpoints ---
-
-@app.route("/countries", methods=["GET"])
-def get_countries():
-    """
-    return list of distinct countries from a given table
-    """
-    table_name = request.args.get("table", "ECDC_GLOBAL")
-    try:
-        # Ensure table_name is validated to prevent SQL injection
-        allowed_tables = ["ECDC_GLOBAL", "ECDC_GLOBAL_WEEKLY", "OWID_VACCINATIONS"]
-        if table_name not in allowed_tables:
-            return jsonify({"error": f"Invalid table name: {table_name}"}), 400
-
-        query = f"SELECT DISTINCT COUNTRY_REGION FROM {table_name}"
-        countries = fetch_data_from_snowflake(query, return_df=False)
-        snowflake_countries = [country[0] for country in countries]
-
-        # find common countries with mortality dataset
-        common_countries = set(df_mortality['country_name']).intersection(set(snowflake_countries))
-        common_countries_list = sorted(list(common_countries))
-    except Exception:
-        common_countries_list = []
-        traceback.print_exc()
-
-    return jsonify(common_countries_list), 200
-
 
 
 @app.route(f"/{EXCESS_MORTALITY_PAGE}", methods=["GET"])
@@ -154,6 +138,8 @@ def add_comment():
         doc["image_id"] = str(file_id)
 
     comments_col.insert_one(doc)
+    cache.clear()
+
     return jsonify({"message": "Comment added"}), 201
 
 
@@ -173,24 +159,6 @@ def get_comment_image(file_id):
     except Exception:
         return jsonify({"error": "Image not found"}), 404
 
-
-@app.route("/comments", methods=["GET"])
-def get_comments():
-    """
-    return list of comments (filtered by country or page if provided)
-    """
-    query = {}
-    if "country" in request.args:
-        query["country"] = request.args["country"]
-    if "page" in request.args:
-        query["page"] = request.args["page"]
-
-    comments = list(comments_col.find(query, {"_id": 0}))
-    for c in comments:
-        if "image_id" in c:
-            c["image_url"] = f"/comments/image/{c['image_id']}"
-
-    return jsonify(comments), 200
 
 
 @app.route(f"/{VACCINATION_PAGE}", methods=["GET"])
@@ -336,6 +304,194 @@ def get_infection_deaths():
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+
+@app.route(f"/{MORTALITY_FORECAST_PAGE}", methods=["GET"])
+def forecast_endpoint():
+    country = request.args.get("country", "Lithuania")
+    try:
+        df_out = build_forecast(country)
+        df_out["date"] = df_out["date"].dt.strftime("%Y-%m-%d")
+        return jsonify(df_out.to_dict(orient="records")), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route(f"/{CLUSTERING_PAGE}", methods=["GET"])
+def clustering_api():
+    k = int(request.args.get("k", 3))
+
+    sql = """
+    SELECT 
+        COUNTRY_REGION,
+        EXTRACT(YEAR FROM DATE) AS YEAR,
+        SUM(DEATHS_WEEKLY) AS TOTAL_DEATHS,
+        SUM(CASES_WEEKLY) AS TOTAL_CASES,
+        MAX(POPULATION) AS POPULATION
+    FROM ECDC_GLOBAL_WEEKLY
+    WHERE EXTRACT(YEAR FROM DATE) BETWEEN 2020 AND 2022
+    GROUP BY COUNTRY_REGION, EXTRACT(YEAR FROM DATE)
+    """
+    df = fetch_data_from_snowflake(sql)
+
+    if df.empty:
+        return jsonify([]), 200
+
+    df_clusters = run_clustering(df, k)
+    return df_clusters.to_json(orient="records"), 200
+@app.route(f"/{EDA_PAGE}", methods=["GET"])
+def run_eda_api():
+    table = request.args.get("table")
+    if not table:
+        return jsonify({"error": "table parameter required"}), 400
+
+    try:
+        sql = f"SELECT * FROM {table} LIMIT 5000"
+        df = fetch_data_from_snowflake(sql, return_df=True)
+
+        from eda import run_basic_eda
+        results = run_basic_eda(df, name=table)
+
+        # ensure safe JSON
+        from eda import _make_json_safe
+        return jsonify(_make_json_safe(results)), 200
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+# --- api endpoints ---
+
+@app.route("/countries", methods=["GET"])
+@cache.cached(query_string=True)   # cache per ?table= value
+def get_countries():
+    """
+    return list of distinct countries from a given table
+    """
+    table_name = request.args.get("table", "ECDC_GLOBAL")
+    try:
+        # Ensure table_name is validated to prevent SQL injection
+        allowed_tables = ["ECDC_GLOBAL", "ECDC_GLOBAL_WEEKLY", "OWID_VACCINATIONS"]
+        if table_name not in allowed_tables:
+            return jsonify({"error": f"Invalid table name: {table_name}"}), 400
+
+        query = f"SELECT DISTINCT COUNTRY_REGION FROM {table_name}"
+        countries = fetch_data_from_snowflake(query, return_df=False)
+        snowflake_countries = [country[0] for country in countries]
+
+        # find common countries with mortality dataset
+        common_countries = set(df_mortality['country_name']).intersection(set(snowflake_countries))
+        common_countries_list = sorted(list(common_countries))
+    except Exception:
+        common_countries_list = []
+        traceback.print_exc()
+
+    return jsonify(common_countries_list), 200
+
+
+@app.route("/comments", methods=["GET"])
+@cache.cached(query_string=True)   # cache per ?country= & ?page=
+def get_comments():
+    """
+    return list of comments (filtered by country or page if provided)
+    """
+    query = {}
+    if "country" in request.args:
+        query["country"] = request.args["country"]
+    if "page" in request.args:
+        query["page"] = request.args["page"]
+
+    comments = list(comments_col.find(query, {"_id": 0}))
+    for c in comments:
+        if "image_id" in c:
+            c["image_url"] = f"/comments/image/{c['image_id']}"
+
+    return jsonify(comments), 200
+
+
+@app.route("/eda/tables", methods=["GET"])
+@cache.cached()   # no params → one cache key
+def list_tables():
+    """
+    Get available tables from INFORMATION_SCHEMA.TABLES
+    """
+    try:
+        sql = """
+            SELECT TABLE_SCHEMA, TABLE_NAME
+            FROM INFORMATION_SCHEMA.TABLES
+            WHERE TABLE_SCHEMA NOT IN ('INFORMATION_SCHEMA')
+        """
+        df = fetch_data_from_snowflake(sql, return_df=True)
+        tables = [f"{row['TABLE_SCHEMA']}.{row['TABLE_NAME']}" for _, row in df.iterrows()]
+        return jsonify(tables), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route(f"/{EDA_PAGE}/report", methods=["GET"])
+def download_eda_report():
+    table = request.args.get("table")
+    if not table:
+        return jsonify({"error": "table parameter required"}), 400
+
+    try:
+        sql = f"SELECT * FROM {table} LIMIT 5000"
+        df = fetch_data_from_snowflake(sql, return_df=True)
+
+        from eda import run_detailed_eda
+        out_file = run_detailed_eda(df, name=table)
+        if not out_file or not os.path.exists(out_file):
+            return jsonify({"error": "Report generation failed"}), 500
+
+        return send_file(out_file, as_attachment=True)
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/patterns", methods=["GET"])
+def covid_patterns():
+    """
+    Detect COVID waves (rise → peak → fall) for a given country using MATCH_RECOGNIZE
+    """
+    country = request.args.get("country")
+    if not country:
+        return jsonify({"error": "country parameter required"}), 400
+
+    try:
+        sql = """
+            SELECT *
+            FROM ECDC_GLOBAL_WEEKLY
+            MATCH_RECOGNIZE (
+              PARTITION BY COUNTRY_REGION
+              ORDER BY DATE
+              MEASURES
+                FIRST(DATE) AS wave_start,
+                LAST(DATE) AS wave_end,
+                MAX(CASES_WEEKLY) AS peak_cases
+              ONE ROW PER MATCH
+              PATTERN (rise+ peak fall+)
+              DEFINE
+                rise AS CASES_WEEKLY > PREV(CASES_WEEKLY),
+                peak AS CASES_WEEKLY >= PREV(CASES_WEEKLY) AND CASES_WEEKLY >= NEXT(CASES_WEEKLY),
+                fall AS CASES_WEEKLY < PREV(CASES_WEEKLY)
+            )
+            WHERE UPPER(COUNTRY_REGION) = %s
+        """
+        df = fetch_data_from_snowflake(sql, return_df=True, params=(country.upper(),))
+
+        if df.empty:
+            return jsonify([]), 200
+
+        df["wave_start"] = pd.to_datetime(df["WAVE_START"]).dt.strftime("%Y-%m-%d")
+        df["wave_end"] = pd.to_datetime(df["WAVE_END"]).dt.strftime("%Y-%m-%d")
+
+        return jsonify(df.to_dict(orient="records")), 200
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 
 
 if __name__ == "__main__":

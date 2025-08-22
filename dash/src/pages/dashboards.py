@@ -1,7 +1,8 @@
+#dash/src/pages/dashboards.py
 from dash import html
 import dash_bootstrap_components as dbc
 import dash
-from config.config import DASHBOARDS_LIST
+from shared.config.config import DASHBOARDS_LIST
 
 # register this page with dash
 dash.register_page(__name__, path="/dashboards", name="Dashboards")
@@ -14,7 +15,7 @@ dashboard_links = [
         className="btn text-white bg-dark common-hover",
         style={"padding": "10px 15px", "margin-bottom": "5px", "border-radius": "5px"}
     )
-    for dashboard in set(DASHBOARDS_LIST)  # avoid duplicates
+    for dashboard in set(DASHBOARDS_LIST)  # no duplicates
 ]
 
 # layout for dashboards page

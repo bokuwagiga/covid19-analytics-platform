@@ -1,11 +1,13 @@
+#dash/src/pages/vaccination.py
+
 import requests
 import dash
 from dash import dcc, html, Input, Output
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
-from config.config import API_BASE, VACCINATION_PAGE
+from shared.config.config import API_BASE, VACCINATION_PAGE
 from components.comments import CommentsSection, register_comment_callbacks
-from utils import get_country_list
+from shared.utils import get_country_list
 
 # register this page
 dash.register_page(__name__, path=f"/dashboards/{VACCINATION_PAGE}", name="Vaccination Impact")
@@ -41,12 +43,12 @@ layout = dbc.Container([
         dbc.Col(
             dbc.Card(
                 dcc.Graph(id="vaccination-graph", style={"height": "500px"}),
-                className="shadow-sm",
+                className="shadow-sm mb-3",
                 style={"borderRadius": "12px", "overflow": "hidden"}
             ),
             width=12, lg=8
         ),
-        CommentsSection("vaccination", country_dropdown_id="vax-country-dropdown")
+        CommentsSection(VACCINATION_PAGE, country_dropdown_id="vax-country-dropdown")
     ])
 ], fluid=True)
 
@@ -133,4 +135,4 @@ def update_vaccination_chart(country):
 
 
 # register reusable comment callbacks
-register_comment_callbacks("vaccination", country_dropdown_id="vax-country-dropdown")
+register_comment_callbacks(VACCINATION_PAGE, country_dropdown_id="vax-country-dropdown")

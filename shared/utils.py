@@ -1,4 +1,4 @@
-# app.py
+# shared/utils.py
 
 import os
 import traceback
@@ -8,7 +8,7 @@ import pandas as pd
 import requests
 import snowflake.connector
 
-from config.config import API_BASE
+from shared.config.config import API_BASE
 
 
 # Environment & Connection

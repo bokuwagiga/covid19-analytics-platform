@@ -1,113 +1,170 @@
-# COVID-19 Mortality Analysis
+# COVID-19 Statistics Analysis Platform
 
 An interactive analytics platform that integrates COVID-19 epidemiological data from Snowflake with all-cause mortality data from Kaggle to evaluate the pandemic’s impact across countries through dashboards, visualizations, and counterfactual analysis.
 
 ## Features
 
-- Connects to Snowflake to retrieve COVID-19 mortality data 
-- Incorporates Kaggle's world mortality dataset for comprehensive analysis 
-- Calculates counterfactual scenarios (mortality without COVID)
-- Visualizes trends with interactive plots 
-- Provides web dashboard for exploring data by country 
-- Allows users to leave comments on dashboards, including text and images for discussion
+* **Data Integration**
+
+  * Snowflake COVID-19 epidemiological datasets
+  * Kaggle World Mortality dataset
+* **Dashboards**
+
+  * Country-level mortality vs. COVID-19 deaths
+  * Infection cases & deaths trends
+  * Vaccination progress
+  * Forecasting of mortality with Prophet
+  * Clustering of countries by pandemic dynamics
+  * Exploratory Data Analysis (EDA) with summary stats & correlations
+  * Pattern recognition using Snowflake `MATCH_RECOGNIZE`
+* **User Interaction**
+
+  * Add comments per dashboard (with optional image upload via GridFS)
+  * Share insights directly inside dashboards
+* **API**
+
+  * REST endpoints for all datasets
+  * Report generation for EDA
+  * Caching of frequently requested endpoints
+* **Deployment**
+
+  * Works locally or via Docker Compose
+  * MongoDB storage for comments & images
+
+---
 
 ## Project Structure
 
-- `src/app.py` - Main application entry point
-- `src/api.py` - API endpoints for data retrieval
-- `src/utils.py` - Utility functions for data processing
-- `src/components/` - Reusable UI components
-- `src/pages/` - Dashboard page definitions
-- `src/config/` - Configuration files (e.g., environment variables)
-- `src/sql/` - SQL scripts for database setup
-- `requirements.txt` - Python dependencies
-- `README.md` - Project documentation
+```
+.
+├── api/                     # Flask API service
+│   └── src/
+│       ├── api.py           # API entrypoint
+│       ├── sql/setup.sql    # Snowflake setup SQL script
+│       ├── sql/setup.py     # Snowflake setup runner
+│       ├── forecast.py      # Forecasting logic
+│       ├── clustering.py    # Clustering logic
+│       ├── eda.py           # EDA functions
+│       └── Dockerfile       # Dockerfile for API  
+│
+├── dash/                    # Dash dashboard service
+│   └── src/
+│       ├── app.py           # Dash entrypoint
+│       ├── components/      # Reusable UI components
+│       ├── Dockerfile       # Dockerfile for Dash
+│       └── pages/           # Dashboard pages
+│           ├── analytics.py # Main analytics page
+│           ├── dashboards.py # Main dashboards page
+│           ├── clustering.py # Clustering of countries
+│           ├── about.py # About page
+│           ├── vaccination.py # Vaccination progress
+│           ├── eda.py # EDA page
+│           ├── excess_mortality.py # Excess mortality vs COVID deaths
+│           ├── home.py # Home page
+│           ├── infection_cases.py # Infection cases trends
+│           ├── infection_deaths.py # Infection deaths trends
+│           ├── mortality_forecast.py # Mortality forecast page
+│           └── patterns.py # Pattern recognition page
+│
+├── shared/                  # Shared code for both API & Dash
+│   ├── config/              # Environment & constants
+│   └── utils.py             # Snowflake queries, preprocessing
+│
+├── docker-compose.yml        # Run everything together
+├── requirements.txt          # Dependencies
+└── README.md                 # Documentation
+```
+
+---
 
 ## Setup
 
 ### Option 1: Local Setup (without Docker)
-1. Clone the repository  
-2. Create a virtual environment: `python -m venv .venv`  
-3. Activate the environment:  
-   - Windows: `.venv\Scripts\activate`  
-   - Unix/MacOS: `source .venv/bin/activate`  
-4. Install dependencies: `pip install -r requirements.txt`  
-5. Copy `config/.env.example` to `config/.env` and configure your Snowflake credentials  
-6. Run the SQL setup file: `sql/setup.sql`  
-7. Go to Snowflake and search "COVID-19 Epidemiological Data" → click **Get** on a COVID-19 provider dataset and enter the database name (same as in `.env`, e.g., `DB_COVID`)  
-8. Set up **MongoDB** (choose one of the options below):
-   - **MongoDB via Docker Compose:**  
-     - If you use the provided `docker-compose.yml`, MongoDB will be started as a service automatically  
-     - Use `MONGO_URI=mongodb://mongodb:27017` in `.env`  
-   
-   - **Local MongoDB:**  
-     - Install MongoDB locally or run with Docker:  
-       ```bash
-       docker run -d -p 27017:27017 --name mongodb mongo:6
-       ```  
-     - Use `MONGO_URI=mongodb://localhost:27017` in `.env`
-   - **MongoDB Atlas (cloud, recommended):**  
-     - Create a free cluster on [MongoDB Atlas](https://www.mongodb.com/atlas)  
-     - Add a database user and whitelist your IP  
-     - Copy the connection string (e.g., `mongodb+srv://<user>:<pass>@cluster0.mongodb.net/`)  
-     - Add it to `.env` as `MONGO_URI`  
-### Option 2: With Docker
-1. Clone the repository  
-2. Copy `config/.env.example` to `config/.env` and configure your Snowflake and MongoDB credentials  
-3. Make sure Docker is installed and running  
-4. Build and start the containers:  
+
+1. Clone the repository
+2. Create a virtual environment
+
    ```bash
-   docker compose up --build
+   python -m venv .venv
    ```
 
-5. Access the dashboard at [http://localhost:8050](http://localhost:8050)
+   Activate:
+
+   * Windows: `.venv\Scripts\activate`
+   * Unix/MacOS: `source .venv/bin/activate`
+3. Install dependencies
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Configure environment:
+
+   * Copy `config/.env.example` → `config/.env`
+   * Add your **Snowflake** credentials & **MongoDB URI**
+5. Run the SQL setup script in Snowflake:
+
+   ```sql
+   api/src/sql/setup.sql
+   ```
+
+   Also subscribe to a Snowflake dataset like *COVID-19 Epidemiological Data* in Marketplace.
+6. Set up **MongoDB** (choose one):
+
+   * Local: `docker run -d -p 27017:27017 mongo:6`
+   * Docker Compose: included in `docker-compose.yml`
+   * MongoDB Atlas (recommended for cloud)
+
+---
+
+### Option 2: Docker Setup
+
+```bash
+docker compose up --build
+```
+
+* Dashboard → [http://localhost:8050](http://localhost:8050)
+* API → [http://localhost:5000](http://localhost:5000)
+
+---
 
 ## Usage
 
-Start the API service:
+Run services manually:
 
 ```bash
-python src/api.py
+# Start API
+python api/src/api.py
+
+# Start Dashboard
+python dash/src/app.py
 ```
 
-Start the dashboard application:
+---
 
-```bash
-python src/app.py
-```
+## API Endpoints
 
-Access the dashboard at [http://localhost:8050](http://localhost:8050)
+* `/countries` → list available countries
+* `/comments [GET|POST]` → read/add comments (+ GridFS image support)
+* `/comments/image/<id>` → fetch uploaded image
+* `/excess-mortality` → merged mortality vs. COVID deaths
+* `/vaccination` → vaccination progress
+* `/infection-cases` → infection case trends
+* `/infection-deaths` → infection death trends
+* `/forecast` → mortality forecast with Prophet
+* `/clustering` → clustering of countries
+* `/eda` → basic EDA on a Snowflake table
+* `/eda/report` → detailed EDA HTML report
+* `/eda/tables` → list available Snowflake tables
+* `/patterns` → pattern recognition (via Snowflake `MATCH_RECOGNIZE`)
 
-## Docker
+(Caching enabled for selected endpoints: countries, comments, EDA tables)
 
-You can also run the whole project with Docker Compose.
-
-Build and start the services:
-
-```bash
-docker-compose up --build
-```
-
-Stop the containers:
-
-```bash
-docker-compose down
-```
-
-This will start both:
-
-* The API service on **[http://localhost:5000](http://localhost:5000)**
-* The Dashboard service on **[http://localhost:8050](http://localhost:8050)**
+---
 
 ## Dependencies
 
-* snowflake-connector-python
-* pandas
-* dotenv
-* kagglehub
-* pymongo
-* flask
-* dash
-* dash\_bootstrap\_components
-* plotly
-* matplotlib
+* **Data & DB**: `snowflake-connector-python`, `pymongo`, `gridfs`
+* **Processing**: `pandas`, `numpy`, `prophet`, `scikit-learn`
+* **Visualization**: `plotly`, `matplotlib`, `dash`, `dash-bootstrap-components`
+* **Web & API**: `flask`, `flask-caching`
+* **Utils**: `python-dotenv`, `kagglehub`
