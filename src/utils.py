@@ -8,7 +8,7 @@ import pandas as pd
 import requests
 import snowflake.connector
 
-from src.config.config import API_BASE
+from config.config import API_BASE
 
 
 # Environment & Connection

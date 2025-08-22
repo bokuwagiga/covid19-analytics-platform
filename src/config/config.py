@@ -1,5 +1,6 @@
 # src/config/config.py
 import os
+API_BASE_EXTERNAL = os.getenv("API_BASE_EXTERNAL", "http://localhost:5000")
 
 EXCESS_MORTALITY_PAGE = "excess-mortality"
 VACCINATION_PAGE = "vaccinations"

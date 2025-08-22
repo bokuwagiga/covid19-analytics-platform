@@ -1,7 +1,7 @@
 from dash import html
 import dash_bootstrap_components as dbc
 import dash
-from src.config.config import DASHBOARDS_LIST
+from config.config import DASHBOARDS_LIST
 
 # register this page with dash
 dash.register_page(__name__, path="/dashboards", name="Dashboards")

@@ -4,9 +4,9 @@ from dash import dcc, html, Input, Output
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 import pandas as pd
-from src.config.config import API_BASE, INFECTION_CASES_PAGE
-from src.components.comments import CommentsSection, register_comment_callbacks
-from src.utils import get_country_list
+from config.config import API_BASE, INFECTION_CASES_PAGE
+from components.comments import CommentsSection, register_comment_callbacks
+from utils import get_country_list
 
 # register this page
 dash.register_page(__name__, path=f"/dashboards/{INFECTION_CASES_PAGE}", name="Infection Cases")

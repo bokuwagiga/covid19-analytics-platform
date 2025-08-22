@@ -5,7 +5,7 @@ FROM python:3.10-slim
 WORKDIR /app
 
 # Ensure Python can find `src` as a package
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/app/src
 
 # Install system deps
 RUN apt-get update && apt-get install -y gcc libpq-dev && rm -rf /var/lib/apt/lists/*

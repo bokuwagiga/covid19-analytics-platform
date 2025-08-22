@@ -3,9 +3,9 @@ import dash
 from dash import dcc, html, Input, Output
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
-from src.config.config import EXCESS_MORTALITY_PAGE, API_BASE
-from src.components.comments import CommentsSection, register_comment_callbacks
-from src.utils import get_country_list
+from config.config import EXCESS_MORTALITY_PAGE, API_BASE
+from components.comments import CommentsSection, register_comment_callbacks
+from utils import get_country_list
 
 # register this page
 dash.register_page(__name__, path=f"/dashboards/{EXCESS_MORTALITY_PAGE}", name="Excess Mortality")

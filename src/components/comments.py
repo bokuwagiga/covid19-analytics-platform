@@ -1,7 +1,8 @@
+#src/components/comments.py
 import requests
 from dash import html, dcc, Output, Input, State, callback, ctx
 import dash_bootstrap_components as dbc
-from src.config.config import API_BASE
+from config.config import API_BASE, API_BASE_EXTERNAL
 
 
 def CommentsSection(page_id: str, country_dropdown_id: str = None):
@@ -110,7 +111,7 @@ def register_comment_callbacks(page_id: str, country_dropdown_id: str = None):
                 html.P(c["comment"], className="mt-2 mb-1"),
 
                 # show image if it exists
-                html.Img(src=f"{API_BASE}{c['image_url']}", style={"maxWidth": "100%", "maxHeight": "200px", "marginTop": "5px", "borderRadius": "6px"}) if c.get("image_url") else None
+                html.Img(src=f"{API_BASE_EXTERNAL}{c['image_url']}", style={"maxWidth": "100%", "maxHeight": "200px", "marginTop": "5px", "borderRadius": "6px"}) if c.get("image_url") else None
             ]) for c in comments
         ], flush=True, style={"maxHeight": "400px"})
 
