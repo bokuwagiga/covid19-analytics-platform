@@ -6,7 +6,7 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
 from shared.config.config import API_BASE, CLUSTERING_PAGE
-from components.comments import CommentsSection, register_comment_callbacks
+from src.components.comments import CommentsSection, register_comment_callbacks
 
 dash.register_page(__name__, path=f"/analytics/{CLUSTERING_PAGE}", name="Country Clustering")
 

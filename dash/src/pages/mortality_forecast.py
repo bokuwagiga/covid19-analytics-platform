@@ -7,7 +7,7 @@ import plotly.graph_objects as go
 import pandas as pd
 from shared.utils import get_country_list
 from shared.config.config import API_BASE, MORTALITY_FORECAST_PAGE
-from components.comments import CommentsSection, register_comment_callbacks
+from src.components.comments import CommentsSection, register_comment_callbacks
 
 dash.register_page(__name__, path=f"/analytics/{MORTALITY_FORECAST_PAGE}", name="Excess Mortality Forecasting")
 

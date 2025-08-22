@@ -14,3 +14,4 @@ prophet
 scikit-learn
 ydata-profiling
 Flask-Caching
+gunicorn

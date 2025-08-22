@@ -2,7 +2,7 @@
 import dash
 import dash_bootstrap_components as dbc
 from dash import html, dcc, page_container
-from components.navbar import get_navbar
+from src.components.navbar import get_navbar
 from shared.config.config import DASHBOARDS_LIST
 
 # create dash app

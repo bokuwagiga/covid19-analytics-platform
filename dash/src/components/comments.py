@@ -36,7 +36,7 @@ def CommentsSection(page_id: str, country_dropdown_id: str = None):
                 className="flex-grow-1 p-0"
             )
         ], className="mb-3 d-flex flex-column",
-            style={"height": "450px", "border": "1px solid #444", "borderRadius": "8px", "overflow": "hidden"}),
+            style={"maxHeight": "450px", "border": "1px solid #444", "borderRadius": "8px", "overflow": "hidden"}),
 
         # comment form card
         dbc.Card([
