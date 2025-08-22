@@ -6,7 +6,7 @@ from dash import dcc, html, Input, Output
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 from shared.config.config import API_BASE, VACCINATION_PAGE
-from components.comments import CommentsSection, register_comment_callbacks
+from src.components.comments import CommentsSection, register_comment_callbacks
 from shared.utils import get_country_list
 
 # register this page
