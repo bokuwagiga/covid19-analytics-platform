@@ -11,8 +11,10 @@ from flask_caching import Cache
 from pymongo import MongoClient
 from bson import ObjectId
 import gridfs
-from forecast import build_forecast
-from clustering import run_clustering
+from src.forecast import build_forecast
+from src.clustering import run_clustering
+from src.eda import run_basic_eda, _make_json_safe
+
 
 # functions from utils
 from shared.utils import (
@@ -452,7 +454,7 @@ def download_eda_report():
 @app.route("/patterns", methods=["GET"])
 def covid_patterns():
     """
-    Detect COVID waves (rise → peak → fall) for a given country using MATCH_RECOGNIZE
+    Detect COVID waves (rise -> peak -> fall) for a given country using MATCH_RECOGNIZE
     """
     country = request.args.get("country")
     if not country:
@@ -472,9 +474,9 @@ def covid_patterns():
               ONE ROW PER MATCH
               PATTERN (rise+ peak fall+)
               DEFINE
-                rise AS CASES_WEEKLY > PREV(CASES_WEEKLY),
-                peak AS CASES_WEEKLY >= PREV(CASES_WEEKLY) AND CASES_WEEKLY >= NEXT(CASES_WEEKLY),
-                fall AS CASES_WEEKLY < PREV(CASES_WEEKLY)
+                rise AS CASES_WEEKLY > LAG(CASES_WEEKLY),
+                peak AS CASES_WEEKLY >= LAG(CASES_WEEKLY) AND CASES_WEEKLY >= LEAD(CASES_WEEKLY),
+                fall AS CASES_WEEKLY < LAG(CASES_WEEKLY)
             )
             WHERE UPPER(COUNTRY_REGION) = %s
         """
