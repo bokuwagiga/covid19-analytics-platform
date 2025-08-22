@@ -145,7 +145,7 @@ def plot_mortality(df: pd.DataFrame, country: str) -> None:
 
 # utility function to get available countries
 
-def get_country_list(table="ECDC_GLOBAL"):
+def get_country_list(table="ECDC_GLOBAL",include_world=False):
     """
     Fetch the list of countries from the API
     adds 'World' option on top of the list
@@ -154,7 +154,10 @@ def get_country_list(table="ECDC_GLOBAL"):
         resp = requests.get(f"{API_BASE}/countries",params={"table": table})
         if resp.status_code == 200:
             countries = resp.json()
-            return ["World"] + countries
+            if include_world:
+                return ["World"] + countries
+            else:
+                return countries
     except:
         return []
     return []

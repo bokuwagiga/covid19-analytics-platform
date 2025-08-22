@@ -11,7 +11,7 @@ from src.utils import get_country_list
 dash.register_page(__name__, path=f"/dashboards/{VACCINATION_PAGE}", name="Vaccination Impact")
 
 
-COUNTRIES = get_country_list(table="ECDC_GLOBAL")
+COUNTRIES = get_country_list(table="ECDC_GLOBAL", include_world=True)
 
 
 
@@ -28,8 +28,8 @@ layout = dbc.Container([
         dbc.Col([
             dcc.Dropdown(
                 id="vax-country-dropdown",
-                options=[{"label": "World", "value": "World"}] + [{"label": c, "value": c} for c in COUNTRIES],
-                value="World",
+                options=[{"label": c, "value": c} for c in COUNTRIES],
+                value=COUNTRIES[0] if COUNTRIES else "World",
                 placeholder='Select a country',
                 style={"width": "100%"}
             )

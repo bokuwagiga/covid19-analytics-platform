@@ -164,9 +164,10 @@ def get_comment_image(file_id):
     """
     try:
         gridout = fs.get(ObjectId(file_id))
+        mimetype = gridout.metadata.get("contentType") if gridout.metadata else None
         return send_file(
             io.BytesIO(gridout.read()),
-            mimetype=gridout.content_type,
+            mimetype=mimetype or "application/octet-stream",
             download_name=gridout.filename
         )
     except Exception:

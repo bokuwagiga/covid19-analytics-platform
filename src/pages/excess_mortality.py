@@ -12,7 +12,7 @@ dash.register_page(__name__, path=f"/dashboards/{EXCESS_MORTALITY_PAGE}", name="
 
 
 
-COUNTRIES = get_country_list(table="ECDC_GLOBAL")
+COUNTRIES = get_country_list(table="ECDC_GLOBAL", include_world=False)
 
 
 # layout
@@ -29,7 +29,7 @@ layout = dbc.Container([
             dcc.Dropdown(
                 id="country-dropdown",
                 options=[{"label": c, "value": c} for c in COUNTRIES],
-                value=COUNTRIES[0],
+                value=COUNTRIES[0] if COUNTRIES else "Lithuania",
                 placeholder="Select a country",
                 style={"width": "100%"}
             )

@@ -12,7 +12,7 @@ from src.utils import get_country_list
 dash.register_page(__name__, path=f"/dashboards/{INFECTION_DEATHS_PAGE}", name="Infection Deaths")
 
 
-COUNTRIES = get_country_list(table="ECDC_GLOBAL_WEEKLY")
+COUNTRIES = get_country_list(table="ECDC_GLOBAL_WEEKLY", include_world=True)
 
 
 
@@ -30,7 +30,7 @@ layout = dbc.Container([
             dcc.Dropdown(
                 id="deaths-country-dropdown",
                 options=[{"label": c, "value": c} for c in COUNTRIES],
-                value="World",
+                value=COUNTRIES[0] if COUNTRIES else "World",
                 placeholder="Select a country",
                 style={"width": "100%"}
             )

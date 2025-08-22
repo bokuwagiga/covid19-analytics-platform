@@ -15,7 +15,7 @@ dash.register_page(__name__, path=f"/dashboards/{INFECTION_CASES_PAGE}", name="I
 
 
 
-COUNTRIES = get_country_list(table="ECDC_GLOBAL_WEEKLY")
+COUNTRIES = get_country_list(table="ECDC_GLOBAL_WEEKLY", include_world=True)
 
 
 # layout
