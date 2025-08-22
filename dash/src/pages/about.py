@@ -42,7 +42,5 @@ layout = dbc.Container([
         ], md=6),
     ], className="mb-5"),
 
-    dbc.Row([
-        dbc.Col(html.H5("Author: [Your Name Here]", className="text-center text-muted"), width=12),
-    ], className="mt-5")
+
 ], fluid=True)
