@@ -1,4 +1,4 @@
--- setup.sql
+-- api/src/sql/setup.sql
 -- Run as ACCOUNTADMIN role (trial account is fine).
 -- Example region: AWS us-east-2 (Ohio).
 -- Adjust database/warehouse names if needed.

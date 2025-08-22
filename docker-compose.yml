@@ -9,24 +9,28 @@ services:
       - mongo_data:/data/db
 
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: api/Dockerfile
     container_name: covid_api
-    command: python src/api.py
+    restart: always
     ports:
       - "5000:5000"
     env_file:
-      - src/config/.env
+      - ./shared/config/.env
     depends_on:
       - mongo
 
   dash:
-    build: .
+    build:
+      context: .
+      dockerfile: dash/Dockerfile
     container_name: covid_dash
-    command: python src/app.py
+    restart: always
     ports:
       - "8050:8050"
     env_file:
-      - src/config/.env
+      - ./shared/config/.env
     depends_on:
       - api
 

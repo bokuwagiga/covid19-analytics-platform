@@ -1,10 +1,12 @@
+# dash/src/components/navbar.py
+
 import dash_bootstrap_components as dbc
 
 
 def get_navbar():
     """
     Creates the top navigation bar
-    Contains links to Home, Dashboards, and About
+    Contains links to Home, Dashboards, Analytics, and About
     """
     return dbc.Navbar(
         dbc.Container(
@@ -17,6 +19,7 @@ def get_navbar():
                     [
                         dbc.NavLink("Home", href="/", className="text-white me-3"),
                         dbc.NavLink("Dashboards", href="/dashboards", className="text-white me-3"),
+                        dbc.NavLink("Analytics", href="/analytics", className="text-white me-3"),
                         dbc.NavLink("About", href="/about", className="text-white"),
                     ],
                     pills=True,

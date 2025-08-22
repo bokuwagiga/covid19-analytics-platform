@@ -1,8 +1,8 @@
-#src/components/comments.py
+#dash/src/components/comments.py
 import requests
 from dash import html, dcc, Output, Input, State, callback, ctx
 import dash_bootstrap_components as dbc
-from config.config import API_BASE, API_BASE_EXTERNAL
+from shared.config.config import API_BASE, API_BASE_EXTERNAL
 
 
 def CommentsSection(page_id: str, country_dropdown_id: str = None):

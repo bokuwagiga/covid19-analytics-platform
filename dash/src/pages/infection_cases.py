@@ -1,12 +1,13 @@
+#dash/src/pages/infection_cases.py
 import requests
 import dash
 from dash import dcc, html, Input, Output
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 import pandas as pd
-from config.config import API_BASE, INFECTION_CASES_PAGE
+from shared.config.config import API_BASE, INFECTION_CASES_PAGE
 from components.comments import CommentsSection, register_comment_callbacks
-from utils import get_country_list
+from shared.utils import get_country_list
 
 # register this page
 dash.register_page(__name__, path=f"/dashboards/{INFECTION_CASES_PAGE}", name="Infection Cases")
@@ -44,12 +45,12 @@ layout = dbc.Container([
         dbc.Col(
             dbc.Card(
                 dcc.Graph(id="cases-graph", style={"height": "600px"}),
-                className="shadow-sm",
+                className="shadow-sm mb-3",
                 style={"borderRadius": "12px", "overflow": "hidden"}
             ),
             width=12, lg=8
         ),
-        CommentsSection("infection-cases", country_dropdown_id="cases-country-dropdown")
+        CommentsSection(INFECTION_CASES_PAGE, country_dropdown_id="cases-country-dropdown")
     ])
 ], fluid=True)
 
@@ -127,4 +128,4 @@ def update_cases_chart(country):
 
 
 # register reusable comment callbacks
-register_comment_callbacks("infection-cases", country_dropdown_id="cases-country-dropdown")
+register_comment_callbacks(INFECTION_CASES_PAGE, country_dropdown_id="cases-country-dropdown")

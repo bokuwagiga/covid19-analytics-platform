@@ -1,11 +1,13 @@
+#dash/src/pages/excess_mortality.py
+
 import requests
 import dash
 from dash import dcc, html, Input, Output
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
-from config.config import EXCESS_MORTALITY_PAGE, API_BASE
+from shared.config.config import EXCESS_MORTALITY_PAGE, API_BASE
 from components.comments import CommentsSection, register_comment_callbacks
-from utils import get_country_list
+from shared.utils import get_country_list
 
 # register this page
 dash.register_page(__name__, path=f"/dashboards/{EXCESS_MORTALITY_PAGE}", name="Excess Mortality")
@@ -41,12 +43,12 @@ layout = dbc.Container([
         dbc.Col(
             dbc.Card(
                 dcc.Graph(id="mortality-graph", style={"height": "500px"}),
-                className="shadow-sm",
+                className="shadow-sm mb-3",
                 style={"borderRadius": "12px", "overflow": "hidden"}
             ),
             width=12, lg=8
         ),
-        CommentsSection("excess-mortality", country_dropdown_id="country-dropdown")
+        CommentsSection(EXCESS_MORTALITY_PAGE, country_dropdown_id="country-dropdown")
     ])
 ], fluid=True)
 
@@ -106,5 +108,5 @@ def update_mortality_chart(country):
     return fig
 
 
-# register reusable comment callbacks for this page
-register_comment_callbacks("excess-mortality", country_dropdown_id="country-dropdown")
+# register reusable comment callbacks
+register_comment_callbacks(EXCESS_MORTALITY_PAGE, country_dropdown_id="country-dropdown")
