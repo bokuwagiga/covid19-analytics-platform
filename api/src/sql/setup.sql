@@ -49,9 +49,9 @@ CREATE OR REPLACE WAREHOUSE WH_COVID
 -- Create database for COVID analysis.
 -- Schema "ANALYTICS" will hold processed data.
 ------------------------------------------------------------
-CREATE OR REPLACE DATABASE DB_COVID;
+CREATE OR REPLACE DATABASE COVID_DB;
 
-USE DATABASE DB_COVID;
+USE DATABASE COVID_DB;
 
 CREATE OR REPLACE SCHEMA ANALYTICS;
 
