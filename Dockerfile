@@ -4,6 +4,9 @@ FROM python:3.10-slim
 # Set workdir
 WORKDIR /app
 
+# Ensure Python can find `src` as a package
+ENV PYTHONPATH=/app
+
 # Install system deps
 RUN apt-get update && apt-get install -y gcc libpq-dev && rm -rf /var/lib/apt/lists/*
 
@@ -14,5 +17,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy source code
 COPY . .
 
-# Default command (overwritten in docker-compose)
-CMD ["python", "app.py"]
+# Default command (will usually be overridden by docker-compose)
+CMD ["python", "src/app.py"]

@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   mongo:
     image: mongo:6.0
@@ -13,22 +11,22 @@ services:
   api:
     build: .
     container_name: covid_api
-    command: python api.py
+    command: python src/api.py
     ports:
       - "5000:5000"
     env_file:
-      - config/.env
+      - src/config/.env
     depends_on:
       - mongo
 
   dash:
     build: .
     container_name: covid_dash
-    command: python app.py
+    command: python src/app.py
     ports:
       - "8050:8050"
     env_file:
-      - config/.env
+      - src/config/.env
     depends_on:
       - api
 
