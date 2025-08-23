@@ -139,21 +139,21 @@ python dash/src/app.py
 
 ## Task Implementation Report
 
-### Task 1 – Snowflake Setup
+### Step 1 – Snowflake Setup
 
 * Subscribed to *COVID-19 Epidemiological Data* (Starschema) from Snowflake Marketplace.
 * Created **warehouse, DB, schema** using `setup.sql`.
 * Configured **resource monitors** to prevent credit overuse.
 
-### Task 2 – Data Exploration and Enhancement
+### Step 2 – Data Exploration and Enhancement
 
 * Used SQL to explore the datasets.
 * Integrated Kaggle **World Mortality dataset** to measure excess mortality.
 * Automated EDA with `/eda` endpoint and `ydata-profiling`.
 
-[Simple EDA example](screenshots/eda.jpeg)
+<img src="screenshots/eda.jpeg" height="400">
 
-### Task 3 – NoSQL Schema
+### Step 3 – NoSQL Schema
 
 User comments stored in MongoDB with this schema:
 
@@ -168,51 +168,53 @@ User comments stored in MongoDB with this schema:
   "image_url": "/comments/image/68a8c61..."
 }
 ```
-[Comments example](screenshots/comments_section.jpeg)
+<img src="screenshots/comments.jpeg" height="400">
 
-### Task 4 – API Development
+
+### Step 4 – API Development
 
 * Flask API with endpoints for all COVID datasets, comments, EDA, clustering, forecast, and patterns.
 * Implemented caching (`Flask-Caching`).
 * Supports both JSON + file uploads (GridFS for images).
 
-### Task 5 – Visualization
+### Step 5 – Visualization
 
 * Dash dashboards for: Mortality, Vaccination, Infection cases, Infection deaths, Forecasting, Clustering, Patterns.
 * Modular UI with reusable `CommentsSection`.
 
-[Dashboard example](screenshots/dashboard_page.jpeg)
+<img src="screenshots/dashboard_page.jpeg" height="400">
 
-### Task 6 – Analytical Features
+### Step 6 – Analytical Features
 
 * **Forecasting**: Prophet model for mortality baseline vs. observed.
 * **Clustering**: KMeans grouping of countries by impact.
 * **Pattern recognition**: Snowflake `MATCH_RECOGNIZE` to identify COVID waves.
 * **EDA**: Summary stats, correlations, missing values.
 
-[Dashboards](screenshots/dashboards.jpeg)
-[Forecast](screenshots/forecast.jpeg)
-[Clustering](screenshots/clustering.jpeg)
 
-### Task 7 – Performance Optimization
+<img src="screenshots/dashboards.jpeg" height="400">
+<img src="screenshots/forecasting.jpeg" height="400">
+<img src="screenshots/clustering.jpeg" height="400">
+
+### Step 7 – Performance Optimization
 
 * Resource monitors in Snowflake.
 * Limited rows for EDA (`LIMIT 5000`).
 * Cached expensive API calls.
 
-### Task 8 – API Caching
+### Step 8 – API Caching
 
 * Implemented caching for `/countries`, `/comments`, `/eda/tables`, and EDA endpoints.
 
-### Task 9 – Pattern Detection
+### Step 9 – Pattern Detection
 
 * Implemented SQL pattern recognition:
 
   * Detects `rise → peak → fall` sequences in weekly cases.
 
-[Patterns example](screenshots/patterns.jpeg)
+<img src="screenshots/patterns.jpeg" height="400">
 
-### Task 10 – Project Sharing
+### Step 10 – Project Sharing
 
 * Provided `setup.sql` for Snowflake schema creation.
 * Dockerized project to ensure portability on any VM.
@@ -234,4 +236,3 @@ User comments stored in MongoDB with this schema:
 ## Author
 
 **Giga Shubitidze**
-
