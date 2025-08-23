@@ -1,154 +1,117 @@
-# COVID-19 Statistics Analysis Platform
+# COVID-19 Data Integration, Analysis, and Visualization Platform
 
-An interactive analytics platform that integrates COVID-19 epidemiological data from Snowflake with all-cause mortality data from Kaggle to evaluate the pandemic’s impact across countries through dashboards, visualizations, and counterfactual analysis.
+**Author: Giga Shubitidze**  
+Bootcamp Project Report
+
+This project implements an end-to-end analytics platform for COVID-19 data, combining **Snowflake**, **Python**, **MongoDB**, and **Dash/Plotly**. The goal is to integrate structured and semi-structured data, build an API layer, and deliver interactive dashboards for analysis of COVID-19’s global impact.
+
+---
 
 ## Features
 
-* **Data Integration**
+- **Data Integration**
+  - Snowflake Marketplace COVID-19 epidemiological datasets
+  - Kaggle World Mortality dataset (for excess mortality analysis)
 
-  * Snowflake COVID-19 epidemiological datasets
-  * Kaggle World Mortality dataset
-* **Dashboards**
+- **Dashboards**
+  - Mortality vs. reported COVID deaths
+  - Infection cases & deaths trends
+  - Vaccination progress
+  - Excess mortality forecasting (Prophet)
+  - Country clustering by pandemic dynamics (KMeans)
+  - Exploratory Data Analysis (EDA) with summary stats & correlations
+  - Pattern recognition (Snowflake `MATCH_RECOGNIZE`)
 
-  * Country-level mortality vs. COVID-19 deaths
-  * Infection cases & deaths trends
-  * Vaccination progress
-  * Forecasting of mortality with Prophet
-  * Clustering of countries by pandemic dynamics
-  * Exploratory Data Analysis (EDA) with summary stats & correlations
-  * Pattern recognition using Snowflake `MATCH_RECOGNIZE`
-* **User Interaction**
+- **User Interaction**
+  - Add comments per dashboard (stored in MongoDB with optional image upload via GridFS)
+  - Share insights and annotations inside dashboards
 
-  * Add comments per dashboard (with optional image upload via GridFS)
-  * Share insights directly inside dashboards
-* **API**
+- **API**
+  - REST endpoints for all datasets
+  - Automated EDA reports (HTML via `ydata-profiling`)
+  - Query caching for performance
 
-  * REST endpoints for all datasets
-  * Report generation for EDA
-  * Caching of frequently requested endpoints
-* **Deployment**
-
-  * Works locally or via Docker Compose
-  * MongoDB storage for comments & images
-  * the comment structure is 
-  ```
-    {
-        "comment": "comment example",
-        "country": "Lithuania",
-        "created_at": "Fri, 22 Aug 2025 19:33:45 GMT",
-        "image_id": "68a8c61131sf1735b1fe29e",
-        "image_url": "/comments/image/68a8c619d36g6835b1fe29e",
-        "page": "cases",
-        "user": "user1"
-    }
-  ```
-  where image_url is the endpoint to fetch the image by its id
+- **Deployment**
+  - Fully containerized with Docker Compose
+  - Works on any VM or cloud environment (just make sure ports are free)
+  - NoSQL database (MongoDB) used for user-generated content
 
 ---
 
 ## Project Structure
 
 ```
+
 .
 ├── api/                     # Flask API service
 │   └── src/
 │       ├── api.py           # API entrypoint
 │       ├── sql/setup.sql    # Snowflake setup SQL script
 │       ├── sql/setup.py     # Snowflake setup runner
-│       ├── forecast.py      # Forecasting logic
-│       ├── clustering.py    # Clustering logic
-│       ├── eda.py           # EDA functions
-│       └── Dockerfile       # Dockerfile for API  
+│       ├── forecast.py      # Forecasting logic (Prophet)
+│       ├── clustering.py    # Clustering logic (KMeans)
+│       ├── eda.py           # EDA functions (ydata-profiling)
+│       └── Dockerfile
 │
 ├── dash/                    # Dash dashboard service
 │   └── src/
 │       ├── app.py           # Dash entrypoint
-│       ├── components/      # Reusable UI components
-│       ├── Dockerfile       # Dockerfile for Dash
-│       └── pages/           # Dashboard pages
-│           ├── analytics.py # Main analytics page
-│           ├── dashboards.py # Main dashboards page
-│           ├── clustering.py # Clustering of countries
-│           ├── about.py # About page
-│           ├── vaccination.py # Vaccination progress
-│           ├── eda.py # EDA page
-│           ├── excess_mortality.py # Excess mortality vs COVID deaths
-│           ├── home.py # Home page
-│           ├── infection_cases.py # Infection cases trends
-│           ├── infection_deaths.py # Infection deaths trends
-│           ├── mortality_forecast.py # Mortality forecast page
-│           └── patterns.py # Pattern recognition page
+│       ├── components/      # Navbar, comments component
+│       ├── pages/           # Individual dashboards
+│       └── Dockerfile
 │
-├── shared/                  # Shared code for both API & Dash
-│   ├── config/              # Environment & constants
+├── shared/                  # Shared code for API & Dash
+│   ├── config/              # Environment variables & constants
 │   └── utils.py             # Snowflake queries, preprocessing
 │
-├── docker-compose.yml        # Run everything together
+├── docker-compose.yml        # Compose file for API + Dash + Mongo
 ├── requirements.txt          # Dependencies
-└── README.md                 # Documentation
+└── README.md                 # This report
+
+````
+
+---
+
+## Setup & Deployment
+
+### 1. Clone and Configure
+```bash
+git clone https://github.com/bokuwagiga/covid19-analytics-platform.git
+cd covid19-analytics-platform
+````
+
+Copy environment template example.env to .env and fill in your credentials:
+
+```bash
+cp shared/config/example.env shared/config/.env
 ```
 
----
+Fill in:
 
-## Setup
+* Snowflake account, user, password, warehouse, database, schema
+* MongoDB URI (local, Docker, or Atlas)
 
-### Option 1: Local Setup (without Docker)
-
-1. Clone the repository
-2. Create a virtual environment
-
-   ```bash
-   python -m venv .venv
-   ```
-
-   Activate:
-
-   * Windows: `.venv\Scripts\activate`
-   * Unix/MacOS: `source .venv/bin/activate`
-3. Install dependencies
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Configure environment:
-
-   * Copy `config/.env.example` → `config/.env`
-   * Add your **Snowflake** credentials & **MongoDB URI**
-5. Run the SQL setup script in Snowflake:
-
-   ```sql
-   api/src/sql/setup.sql
-   ```
-
-   Also subscribe to a Snowflake dataset like *COVID-19 Epidemiological Data* in Marketplace.
-6. Set up **MongoDB** (choose one):
-
-   * Local: `docker run -d -p 27017:27017 mongo:6`
-   * Docker Compose: included in `docker-compose.yml`
-   * MongoDB Atlas (recommended for cloud)
-
----
-
-### Option 2: Docker Setup
+### 2. Option A – Run with Docker (recommended)
 
 ```bash
 docker compose up --build
 ```
 
-* Dashboard → [http://localhost:8050](http://localhost:8050)
 * API → [http://localhost:5000](http://localhost:5000)
+* Dashboard → [http://localhost:8050](http://localhost:8050)
+* MongoDB → [http://localhost:27017](http://localhost:27017) (if needed)
 
----
+*(Ensure ports 5000, 8050, and 27017 are free.)*
 
-## Usage
-
-Run services manually:
+### 3. Option B – Run Locally (without Docker)
 
 ```bash
-# Start API
-python api/src/api.py
+python -m venv .venv
+source .venv/bin/activate   # (Unix/Mac)
+# .venv\Scripts\activate   # (Windows)
 
-# Start Dashboard
+pip install -r requirements.txt
+python api/src/api.py
 python dash/src/app.py
 ```
 
@@ -156,23 +119,106 @@ python dash/src/app.py
 
 ## API Endpoints
 
-* `/countries` → list available countries
-* `/comments [GET|POST]` → read/add comments (stored and fetched from MongoDB NoSQL database, with GridFS image support)
+* `/countries` → list countries
+* `/comments [GET|POST]` → comments CRUD (stored in MongoDB + GridFS images)
 * `/comments/image/<id>` → fetch uploaded image
 * `/excess-mortality` → merged mortality vs. COVID deaths
-* `/vaccination` → vaccination progress
+* `/vaccinations` → vaccination progress
 * `/infection-cases` → infection case trends
 * `/infection-deaths` → infection death trends
-* `/forecast` → mortality forecast with Prophet
+* `/mortality-forecast` → forecast with Prophet
 * `/clustering` → clustering of countries
 * `/eda` → basic EDA on a Snowflake table
-* `/eda/report` → detailed EDA HTML report
+* `/eda/report` → detailed profiling HTML report
 * `/eda/tables` → list available Snowflake tables
-* `/patterns` → pattern recognition (via Snowflake `MATCH_RECOGNIZE`)
+* `/patterns` → COVID wave detection with `MATCH_RECOGNIZE`
 
-(Caching enabled for selected endpoints: countries, comments, EDA tables)
+*(Frequently accessed endpoints cached for 5 minutes.)*
 
 ---
+
+## Task Implementation Report
+
+### Task 1 – Snowflake Setup
+
+* Subscribed to *COVID-19 Epidemiological Data* (Starschema) from Snowflake Marketplace.
+* Created **warehouse, DB, schema** using `setup.sql`.
+* Configured **resource monitors** to prevent credit overuse.
+
+### Task 2 – Data Exploration and Enhancement
+
+* Used SQL to explore the datasets.
+* Integrated Kaggle **World Mortality dataset** to measure excess mortality.
+* Automated EDA with `/eda` endpoint and `ydata-profiling`.
+
+[Simple EDA example](screenshots/eda.jpeg)
+
+### Task 3 – NoSQL Schema
+
+User comments stored in MongoDB with this schema:
+
+```json
+{
+  "comment": "Example insight",
+  "country": "Lithuania",
+  "user": "user1",
+  "page": "cases",
+  "created_at": "2025-08-22T19:33:45Z",
+  "image_id": "68a8c61...",
+  "image_url": "/comments/image/68a8c61..."
+}
+```
+[Comments example](screenshots/comments_section.jpeg)
+
+### Task 4 – API Development
+
+* Flask API with endpoints for all COVID datasets, comments, EDA, clustering, forecast, and patterns.
+* Implemented caching (`Flask-Caching`).
+* Supports both JSON + file uploads (GridFS for images).
+
+### Task 5 – Visualization
+
+* Dash dashboards for: Mortality, Vaccination, Infection cases, Infection deaths, Forecasting, Clustering, Patterns.
+* Modular UI with reusable `CommentsSection`.
+
+[Dashboard example](screenshots/dashboard_page.jpeg)
+
+### Task 6 – Analytical Features
+
+* **Forecasting**: Prophet model for mortality baseline vs. observed.
+* **Clustering**: KMeans grouping of countries by impact.
+* **Pattern recognition**: Snowflake `MATCH_RECOGNIZE` to identify COVID waves.
+* **EDA**: Summary stats, correlations, missing values.
+
+[Dashboards](screenshots/dashboards.jpeg)
+[Forecast](screenshots/forecast.jpeg)
+[Clustering](screenshots/clustering.jpeg)
+
+### Task 7 – Performance Optimization
+
+* Resource monitors in Snowflake.
+* Limited rows for EDA (`LIMIT 5000`).
+* Cached expensive API calls.
+
+### Task 8 – API Caching
+
+* Implemented caching for `/countries`, `/comments`, `/eda/tables`, and EDA endpoints.
+
+### Task 9 – Pattern Detection
+
+* Implemented SQL pattern recognition:
+
+  * Detects `rise → peak → fall` sequences in weekly cases.
+
+[Patterns example](screenshots/patterns.jpeg)
+
+### Task 10 – Project Sharing
+
+* Provided `setup.sql` for Snowflake schema creation.
+* Dockerized project to ensure portability on any VM.
+
+---
+
 
 ## Dependencies
 
@@ -180,4 +226,12 @@ python dash/src/app.py
 * **Processing**: `pandas`, `numpy`, `prophet`, `scikit-learn`
 * **Visualization**: `plotly`, `matplotlib`, `dash`, `dash-bootstrap-components`
 * **Web & API**: `flask`, `flask-caching`
-* **Utils**: `python-dotenv`, `kagglehub`
+* **Utilities**: `python-dotenv`, `kagglehub`
+* **EDA**: `ydata-profiling`
+
+---
+
+## Author
+
+**Giga Shubitidze**
+

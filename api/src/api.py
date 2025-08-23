@@ -413,7 +413,7 @@ def get_comments():
 
 
 @app.route("/eda/tables", methods=["GET"])
-@cache.cached()   # no params → one cache key
+@cache.cached()
 def list_tables():
     """
     Get available tables from INFORMATION_SCHEMA.TABLES
