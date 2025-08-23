@@ -30,6 +30,19 @@ An interactive analytics platform that integrates COVID-19 epidemiological data 
 
   * Works locally or via Docker Compose
   * MongoDB storage for comments & images
+  * the comment structure is 
+  ```
+    {
+        "comment": "comment example",
+        "country": "Lithuania",
+        "created_at": "Fri, 22 Aug 2025 19:33:45 GMT",
+        "image_id": "68a8c61131sf1735b1fe29e",
+        "image_url": "/comments/image/68a8c619d36g6835b1fe29e",
+        "page": "cases",
+        "user": "user1"
+    }
+  ```
+  where image_url is the endpoint to fetch the image by its id
 
 ---
 
@@ -144,7 +157,7 @@ python dash/src/app.py
 ## API Endpoints
 
 * `/countries` → list available countries
-* `/comments [GET|POST]` → read/add comments (+ GridFS image support)
+* `/comments [GET|POST]` → read/add comments (stored and fetched from MongoDB NoSQL database, with GridFS image support)
 * `/comments/image/<id>` → fetch uploaded image
 * `/excess-mortality` → merged mortality vs. COVID deaths
 * `/vaccination` → vaccination progress
